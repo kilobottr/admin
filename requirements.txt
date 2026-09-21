@@ -1,0 +1,2 @@
+# No external dependencies — using Python stdlib only (urllib, json, ssl, os, hashlib)
+
