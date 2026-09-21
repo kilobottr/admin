@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Royel PVC Printer — Admin</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#1e1e2e;color:#cdd6f4;min-height:100vh}
+.header{background:#0f3460;padding:14px 28px;display:flex;align-items:center;justify-content:space-between}
+.header h1{color:#f0a500;font-size:1.3rem}
+.header a{color:#90909a;font-size:.85rem;cursor:pointer;text-decoration:none}
+.header a:hover{color:#f0a500}
+.wrap{max-width:1100px;margin:0 auto;padding:20px 14px}
+.stats{display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.stat{background:#0f3460;border-radius:8px;padding:14px 22px;flex:1;min-width:110px;text-align:center}
+.stat .v{font-size:2rem;font-weight:bold;color:#f0a500}
+.stat .l{font-size:.78rem;color:#90909a;margin-top:3px}
+.card{background:#16213e;border-radius:8px;padding:18px;margin-bottom:18px;border:1px solid #2a2a4a}
+.card h2{color:#f0a500;font-size:.95rem;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #2a2a4a}
+table{width:100%;border-collapse:collapse;font-size:.83rem}
+th{background:#0f3460;color:#f0a500;padding:8px 10px;text-align:left}
+td{padding:7px 10px;border-bottom:1px solid #1e1e3a;vertical-align:middle}
+tr:hover td{background:#1a1a35}
+.badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:.72rem;font-weight:bold}
+.on{background:#1b5e20;color:#66bb6a}.off{background:#4a0000;color:#ef5350}
+.btn{display:inline-block;padding:5px 12px;border-radius:4px;cursor:pointer;font-size:.78rem;border:none;font-family:inherit;font-weight:bold;transition:opacity .15s}
+.btn:hover{opacity:.85}
+.rd{background:#ef5350;color:#fff}.am{background:#f0a500;color:#000}.gn{background:#66bb6a;color:#000}.bl{background:#4fc3f7;color:#000}
+input[type=text],input[type=password],input[type=date]{background:#0a0a14;border:1px solid #2a2a4a;color:#cdd6f4;padding:8px 10px;border-radius:4px;font-family:inherit;font-size:.88rem;width:100%}
+input:focus{outline:2px solid #f0a500}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.col{flex:1;min-width:130px}
+.lbl{font-size:.78rem;color:#90909a;display:block;margin-bottom:4px}
+.msg{padding:10px 14px;border-radius:6px;margin-bottom:14px;font-size:.88rem}
+.msg-ok{background:#1b5e20;color:#a5d6a7}
+.msg-err{background:#4a0000;color:#ef9a9a}
+.tabs{display:flex;gap:6px;margin-bottom:-1px;flex-wrap:wrap}
+.tab{padding:8px 16px;border:none;border-radius:6px 6px 0 0;cursor:pointer;font-size:.82rem;background:#0f3460;color:#90909a;font-family:inherit;transition:.15s}
+.tab.on{background:#f0a500;color:#000;font-weight:bold}
+.pane{display:none}.pane.on{display:block}
+.mono{font-family:Consolas,monospace;letter-spacing:.04em}
+/* login */
+.box{max-width:340px;margin:80px auto;background:#16213e;padding:32px;border-radius:12px;border:1px solid #2a2a4a;text-align:center}
+.box h1{color:#f0a500;margin-bottom:10px;font-size:1.3rem}
+.box p{color:#90909a;font-size:.82rem;margin-bottom:20px}
+.box input{margin-bottom:12px;text-align:left}
+.box button{width:100%;padding:10px;background:#f0a500;color:#000;border:none;border-radius:4px;font-weight:bold;cursor:pointer;font-size:.95rem;margin-top:4px}
+.loading{color:#90909a;text-align:center;padding:20px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-section">
+  <div class="box">
+    <h1>🔑 Admin Login</h1>
+    <p>Royel PVC Printer</p>
+    <span class="lbl" style="text-align:left">Admin Password</span>
+    <input type="password" id="login-pwd" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()">
+    <div id="login-msg"></div>
+    <button onclick="doLogin()">Login →</button>
+  </div>
+</div>
+
+<!-- MAIN PANEL -->
+<div id="main-section" style="display:none">
+  <div class="header">
+    <h1>🖨 Royel PVC — Admin Panel</h1>
+    <a onclick="doLogout()">Logout ⬡</a>
+  </div>
+  <div class="wrap">
+    <div id="msg-bar"></div>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat"><div class="v" id="stat-total">—</div><div class="l">Total Keys</div></div>
+      <div class="stat"><div class="v" id="stat-active" style="color:#66bb6a">—</div><div class="l">Active</div></div>
+      <div class="stat"><div class="v" id="stat-disabled" style="color:#ef5350">—</div><div class="l">Disabled</div></div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab on" onclick="showTab('keys',this)">🔑 Keys</button>
+      <button class="tab"    onclick="showTab('gen',this)">⚡ Generate</button>
+      <button class="tab"    onclick="showTab('add',this)">➕ Add Custom</button>
+      <button class="tab"    onclick="showTab('log',this);loadLog()">📋 Activity</button>
+    </div>
+
+    <!-- Keys -->
+    <div id="pane-keys" class="pane on card">
+      <h2>🔑 All License Keys</h2>
+      <div id="keys-table" class="loading">Loading…</div>
+    </div>
+
+    <!-- Generate -->
+    <div id="pane-gen" class="pane card">
+      <h2>⚡ Generate Random Key</h2>
+      <div class="row">
+        <div class="col"><span class="lbl">User Name</span><input type="text" id="gen-name" placeholder="e.g. SSR TELECOM"></div>
+        <div class="col"><span class="lbl">Expiry (optional)</span><input type="date" id="gen-exp"></div>
+        <div class="col" style="max-width:160px"><span class="lbl">&nbsp;</span>
+          <button class="btn bl" style="width:100%;padding:9px" onclick="generateKey()">⚡ Generate & Add</button>
+        </div>
+      </div>
+      <p style="margin-top:10px;color:#90909a;font-size:.78rem">Generated key appears in the message bar above — copy it immediately!</p>
+    </div>
+
+    <!-- Add Custom -->
+    <div id="pane-add" class="pane card">
+      <h2>➕ Add Custom Key</h2>
+      <div class="row">
+        <div class="col"><span class="lbl">License Key *</span><input type="text" id="add-key" placeholder="KING-0001-ABCD-1234"></div>
+        <div class="col"><span class="lbl">User Name</span><input type="text" id="add-name" placeholder="e.g. SSR TELECOM"></div>
+        <div class="col"><span class="lbl">Expiry (optional)</span><input type="date" id="add-exp"></div>
+        <div class="col" style="max-width:140px"><span class="lbl">&nbsp;</span>
+          <button class="btn gn" style="width:100%;padding:9px" onclick="addKey()">✔ Add Key</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Log -->
+    <div id="pane-log" class="pane card">
+      <h2>📋 Activity Log</h2>
+      <button class="btn rd" style="float:right;margin-bottom:10px" onclick="clearLog()">🧹 Clear</button>
+      <div id="log-table" class="loading">Click "Activity" tab to load…</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Config ────────────────────────────────────────────────────────────────────
+// This admin.html is served from your Vercel deployment.
+// API calls go to /api/admin and /api/validate on the same domain.
+const BASE = '';   // empty = same domain as admin.html
+
+let adminPassword = '';
+
+// ── Auth ──────────────────────────────────────────────────────────────────────
+async function doLogin() {
+  const pwd = document.getElementById('login-pwd').value.trim();
+  const msgEl = document.getElementById('login-msg');
+  if (!pwd) return;
+  msgEl.innerHTML = '<div class="msg" style="background:#0f3460;color:#90909a;margin-top:8px">Checking…</div>';
+  // Test password by calling admin API
+  const res = await adminFetch('GET', '?action=stats', null, pwd);
+  if (res && res.ok !== undefined) {
+    adminPassword = pwd;
+    document.getElementById('login-section').style.display = 'none';
+    document.getElementById('main-section').style.display = 'block';
+    loadKeys();
+  } else {
+    msgEl.innerHTML = '<div class="msg msg-err" style="margin-top:8px">❌ Wrong password.</div>';
+  }
+}
+
+function doLogout() {
+  adminPassword = '';
+  document.getElementById('login-section').style.display = 'block';
+  document.getElementById('main-section').style.display = 'none';
+  document.getElementById('login-pwd').value = '';
+}
+
+// ── API helper ────────────────────────────────────────────────────────────────
+async function adminFetch(method, path, body, pwd) {
+  try {
+    const opts = {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Admin-Password': pwd || adminPassword,
+      }
+    };
+    if (body) opts.body = JSON.stringify(body);
+    const r = await fetch(BASE + '/api/admin' + (path || ''), opts);
+    return await r.json();
+  } catch(e) {
+    return {error: e.message};
+  }
+}
+
+function showMsg(msg, ok=true) {
+  const el = document.getElementById('msg-bar');
+  el.innerHTML = `<div class="msg ${ok?'msg-ok':'msg-err'}">${msg}</div>`;
+  setTimeout(() => el.innerHTML = '', 5000);
+}
+
+// ── Load keys ─────────────────────────────────────────────────────────────────
+async function loadKeys() {
+  const el = document.getElementById('keys-table');
+  el.innerHTML = '<div class="loading">Loading…</div>';
+  const data = await adminFetch('GET', '?action=list');
+  if (!data || data.error) {
+    el.innerHTML = '<div class="loading" style="color:#ef5350">Error loading keys.</div>';
+    return;
+  }
+  const keys = data.keys || {};
+  const ids = Object.keys(keys);
+  // Stats
+  const active = ids.filter(k => keys[k].active !== '0').length;
+  document.getElementById('stat-total').textContent    = ids.length;
+  document.getElementById('stat-active').textContent   = active;
+  document.getElementById('stat-disabled').textContent = ids.length - active;
+
+  if (ids.length === 0) {
+    el.innerHTML = '<p style="color:#90909a;padding:12px">No keys yet. Use Generate or Add Custom tab.</p>';
+    return;
+  }
+  let html = `<table><tr>
+    <th>License Key</th><th>User</th><th>Status</th>
+    <th>Expiry</th><th>Last Seen</th><th>Uses</th><th>Actions</th>
+  </tr>`;
+  for (const [k, v] of Object.entries(keys)) {
+    const isActive = v.active !== '0';
+    html += `<tr>
+      <td class="mono" style="font-size:.78rem">${k}</td>
+      <td>${v.name||''}</td>
+      <td><span class="badge ${isActive?'on':'off'}">${isActive?'ACTIVE':'DISABLED'}</span></td>
+      <td>${v.expiry||'—'}</td>
+      <td style="font-size:.78rem">${v.last_seen||'Never'}</td>
+      <td>${v.count||0}</td>
+      <td>
+        <button class="btn am" onclick="toggleKey('${k}')">${isActive?'⏸ Disable':'▶ Enable'}</button>
+        &nbsp;
+        <button class="btn rd" onclick="deleteKey('${k}')">🗑</button>
+      </td>
+    </tr>`;
+  }
+  el.innerHTML = html + '</table>';
+}
+
+// ── Key actions ────────────────────────────────────────────────────────────────
+async function generateKey() {
+  const name   = document.getElementById('gen-name').value.trim();
+  const expiry = document.getElementById('gen-exp').value;
+  const data   = await adminFetch('POST', '', {action:'generate', name, expiry});
+  if (data && data.ok) {
+    showMsg(`✅ ${data.msg} — <strong style="font-family:monospace">${data.key}</strong>`);
+    loadKeys();
+  } else showMsg(data?.msg || 'Error', false);
+}
+
+async function addKey() {
+  const k      = document.getElementById('add-key').value.trim();
+  const name   = document.getElementById('add-name').value.trim();
+  const expiry = document.getElementById('add-exp').value;
+  if (!k) return showMsg('Enter a license key', false);
+  const data = await adminFetch('POST', '', {action:'add', key:k, name, expiry});
+  if (data && data.ok) { showMsg(`✅ ${data.msg}`); loadKeys(); }
+  else showMsg(data?.msg || 'Error', false);
+}
+
+async function toggleKey(k) {
+  const data = await adminFetch('POST', '', {action:'toggle', key:k});
+  if (data && data.ok) { showMsg(`🔄 ${data.msg}`); loadKeys(); }
+  else showMsg(data?.msg || 'Error', false);
+}
+
+async function deleteKey(k) {
+  if (!confirm(`Delete key ${k}?`)) return;
+  const data = await adminFetch('POST', '', {action:'delete', key:k});
+  if (data && data.ok) { showMsg(`🗑 ${data.msg}`); loadKeys(); }
+  else showMsg(data?.msg || 'Error', false);
+}
+
+async function loadLog() {
+  const el = document.getElementById('log-table');
+  el.innerHTML = '<div class="loading">Loading…</div>';
+  const data = await adminFetch('GET', '?action=log');
+  if (!data || !data.log) { el.innerHTML='<div class="loading" style="color:#ef5350">Error.</div>'; return; }
+  if (data.log.length === 0) { el.innerHTML='<p style="color:#90909a">No activity yet.</p>'; return; }
+  const colors = {ok:'#66bb6a', invalid:'#ef5350', disabled:'#f0a500', expired:'#90909a'};
+  let html = `<table><tr><th>Time</th><th>Key</th><th>Machine</th><th>IP</th><th>Result</th></tr>`;
+  for (const r of data.log) {
+    const col = colors[r.a] || '#90909a';
+    html += `<tr>
+      <td>${r.t}</td>
+      <td class="mono" style="font-size:.78rem">${r.k}</td>
+      <td class="mono" style="font-size:.72rem">${r.m||'—'}</td>
+      <td>${r.ip||'—'}</td>
+      <td><span style="color:${col};font-weight:bold">${(r.a||'').toUpperCase()}</span></td>
+    </tr>`;
+  }
+  el.innerHTML = html + '</table>';
+}
+
+async function clearLog() {
+  if (!confirm('Clear all activity log?')) return;
+  const data = await adminFetch('POST', '', {action:'clearlog'});
+  showMsg(data?.msg || 'Log cleared');
+  loadLog();
+}
+
+function showTab(id, btn) {
+  document.querySelectorAll('.pane').forEach(p => p.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('on'));
+  document.getElementById('pane-'+id).classList.add('on');
+  btn.classList.add('on');
+}
+
+// Enter key on login
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.getElementById('login-section').style.display !== 'none') doLogin();
+});
+</script>
+</body>
+</html>
+

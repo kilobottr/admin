@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "functions": {
+    "api/validate.py": { "runtime": "python3.9" },
+    "api/admin.py":    { "runtime": "python3.9" }
+  },
+  "routes": [
+    { "src": "/api/validate", "dest": "/api/validate.py" },
+    { "src": "/api/admin",    "dest": "/api/admin.py" },
+    { "src": "/",             "dest": "/admin.html" }
+  ]
+}
+
